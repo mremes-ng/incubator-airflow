@@ -37,13 +37,16 @@ def trigger_dag(dag_id, run_id=None, conf=None, execution_date=None):
     if not run_id:
         run_id = "manual__{0}".format(execution_date.isoformat())
 
-    dr = DagRun.find(dag_id=dag_id, run_id=run_id)
-    if dr:
-        raise AirflowException("Run id {} already exists for dag id {}".format(
-            run_id,
-            dag_id
-        ))
-
+    drs = DagRun.find(dag_id=dag_id, run_id=run_id)
+    for dr in drs:
+        if dr and dr.state == State.NONE:
+            dr.set_state(State.RUNNING)
+            return dr
+        elif dr and dr.state != State.NONE:
+            raise AirflowException("Run id {} already exists for dag id {}".format(
+                run_id,
+                dag_id
+            ))
     run_conf = None
     if conf:
         run_conf = json.loads(conf)

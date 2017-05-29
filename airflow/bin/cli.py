@@ -617,7 +617,8 @@ def clear(args):
         only_failed=args.only_failed,
         only_running=args.only_running,
         confirm_prompt=not args.no_confirm,
-        include_subdags=not args.exclude_subdags)
+        include_subdags=not args.exclude_subdags,
+        reset_dag_runs=args.reset_dag_runs)
 
 
 def restart_workers(gunicorn_master_proc, num_workers_expected):
@@ -1240,6 +1241,8 @@ class CLIFactory(object):
         'exclude_subdags': Arg(
             ("-x", "--exclude_subdags"),
             "Exclude subdags", "store_true"),
+        'reset_dag_runs': Arg(
+            ("-o", "--reset_dag_runs"), "Reset DAG to running state", "store_true"),
         # trigger_dag
         'run_id': Arg(("-r", "--run_id"), "Helps to identify this run"),
         'conf': Arg(
@@ -1485,7 +1488,7 @@ class CLIFactory(object):
             'args': (
                 'dag_id', 'task_regex', 'start_date', 'end_date', 'subdir',
                 'upstream', 'downstream', 'no_confirm', 'only_failed',
-                'only_running', 'exclude_subdags'),
+                'only_running', 'exclude_subdags', 'reset_dag_runs'),
         }, {
             'func': pause,
             'help': "Pause a DAG",

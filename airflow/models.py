@@ -3139,7 +3139,7 @@ class DAG(BaseDag, LoggingMixin):
     @provide_session
     def set_dag_runs_state(
             self, state=State.RUNNING, session=None):
-        drs = session.query(DagModel).filter_by(dag_id=self.dag_id).all()
+        drs = session.query(DagRun).filter_by(dag_id=self.dag_id).all()
         dirty_ids = []
         for dr in drs:
             dr.state = state
@@ -3152,7 +3152,7 @@ class DAG(BaseDag, LoggingMixin):
             only_running=False,
             confirm_prompt=False,
             include_subdags=True,
-            reset_dag_runs=True,
+            reset_dag_runs=False,
             dry_run=False):
         """
         Clears a set of task instances associated with the current dag for
@@ -3193,6 +3193,10 @@ class DAG(BaseDag, LoggingMixin):
             print("Nothing to clear.")
             return 0
         if confirm_prompt:
+            if reset_dag_runs:
+                print("This should put dag to running state")
+            else:
+                print("State should be none")
             ti_list = "\n".join([str(t) for t in tis])
             question = (
                 "You are about to delete these {count} tasks:\n"
@@ -3203,7 +3207,10 @@ class DAG(BaseDag, LoggingMixin):
         if do_it:
             clear_task_instances(tis, session)
             if reset_dag_runs:
-                self.set_dag_runs_state(session=session)
+                self.set_dag_runs_state(session=session, state=State.RUNNING)
+            else:
+                drs = session.query(DagRun)
+                self.set_dag_runs_state(session=session, state=State.NONE)
         else:
             count = 0
             print("Bail. Nothing was cleared.")
