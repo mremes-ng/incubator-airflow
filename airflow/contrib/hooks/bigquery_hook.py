@@ -235,12 +235,15 @@ class BigQueryBaseCursor(object):
                     'tableId': destination_table,
                 }
             })
+
+            if '$' in destination_table:
+                configuration['query'].update({'timePartitioning': {'type': 'DAY'}})
+
         if udf_config:
             assert isinstance(udf_config, list)
             configuration['query'].update({
                 'userDefinedFunctionResources': udf_config
             })
-
         return self.run_with_configuration(configuration)
 
     def run_extract(  # noqa
